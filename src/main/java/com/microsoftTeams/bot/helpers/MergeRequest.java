@@ -1,7 +1,6 @@
 package com.microsoftTeams.bot.helpers;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -10,29 +9,35 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MergeRequest {
+
+    @JsonProperty("id")
     private Long id;
+
+    @JsonProperty("title")
     private String title;
-    private LastCommit last_commit;
+
+    @JsonProperty("last_commit")
+    private LastCommit lastCommit;
+
+    @JsonProperty("state")
     private String state;
-    private String merge_status;
-    private String has_conflicts;
-    private String web_url;
+
+    @JsonProperty("merge_status")
+    private String mergeStatus;
+
+    @JsonProperty("has_conflicts")
+    private String hasConflicts;
+
+    @JsonProperty("web_url")
+    private String webUrl;
 
     @JsonProperty("author")
     private Author author;
 
-    private int upvote;
 
     public MergeRequest() {
     }
 
-    public int getUpvote() {
-        return upvote;
-    }
-
-    public void setUpvote(int upvote) {
-        this.upvote = upvote;
-    }
 
     public Author getAuthor() {
         return author;
@@ -42,28 +47,28 @@ public class MergeRequest {
         this.author = author;
     }
 
-    public String getWeb_url() {
-        return web_url;
+    public String getWebUrl() {
+        return webUrl;
     }
 
-    public void setWeb_url(String web_url) {
-        this.web_url = web_url;
+    public void setWebUrl(String webUrl) {
+        this.webUrl = webUrl;
     }
 
-    public String getMerge_status() {
-        return merge_status;
+    public String getMergeStatus() {
+        return mergeStatus;
     }
 
-    public String getHas_conflicts() {
-        return has_conflicts;
+    public String getHasConflicts() {
+        return hasConflicts;
     }
 
-    public void setHas_conflicts(String has_conflicts) {
-        this.has_conflicts = has_conflicts;
+    public void setHasConflicts(String hasConflicts) {
+        this.hasConflicts = hasConflicts;
     }
 
-    public void setMerge_status(String merge_status) {
-        this.merge_status = merge_status;
+    public void setMergeStatus(String mergeStatus) {
+        this.mergeStatus = mergeStatus;
     }
 
     public String getState() {
@@ -90,11 +95,11 @@ public class MergeRequest {
         this.title = title;
     }
 
-    public LastCommit getLast_commit() {
-        return last_commit;
+    public LastCommit getLastCommit() {
+        return lastCommit;
     }
 
-    public void setLast_commit(LastCommit last_commit) {
-        this.last_commit = last_commit;
+    public void setLastCommit(LastCommit lastCommit) {
+        this.lastCommit = lastCommit;
     }
 }

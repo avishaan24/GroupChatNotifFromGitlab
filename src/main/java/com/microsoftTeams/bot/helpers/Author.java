@@ -11,19 +11,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Author {
     @JsonProperty("id")
     private Long id;
+
+    @JsonProperty("name")
     private String name;
+
+    @JsonProperty("email")
     private String email;
 
-    public Author() {
-    }
+    public Author() {}
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() {return id;}
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public void setId(Long id) {this.id = id;}
 
     public String getName() {
         return name;

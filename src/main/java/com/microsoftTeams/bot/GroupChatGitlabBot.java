@@ -11,6 +11,7 @@ import com.microsoft.bot.builder.teams.TeamsInfo;
 import com.microsoft.bot.schema.*;
 import com.microsoft.bot.schema.teams.TeamsChannelAccount;
 import com.microsoftTeams.bot.helpers.MergeRequest;
+import com.microsoftTeams.bot.helpers.Pipeline;
 import org.apache.commons.lang3.StringUtils;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -27,8 +28,8 @@ import java.util.concurrent.CompletableFuture;
  *
  * <p>
  * This is where application specific logic for interacting with the users would
- * be added. For this sample, the {@link #onMessageActivity(TurnContext)} echos
- * the text back to the user and updates the shared
+ * be added. In this bot, the {@link #onMessageActivity(TurnContext)}
+ * updates the shared
  * {@link ConversationReferences}. The
  * {@link #onMembersAdded(List, TurnContext)} will send a greeting to new
  * conversation participants with instructions for sending a proactive message.
@@ -42,7 +43,7 @@ public class GroupChatGitlabBot extends ActivityHandler {
     private final String welcomeMessage =
         "Successfully added, we will notify about your operations in Gitlab.\n" + "\nThanks!!";
 
-    private ConversationReferences conversationReferences;
+    private final ConversationReferences conversationReferences;
 
     public GroupChatGitlabBot(ConversationReferences withReferences) {
         conversationReferences = withReferences;
@@ -67,7 +68,7 @@ public class GroupChatGitlabBot extends ActivityHandler {
             )
             .map(
                 channel -> turnContext
-                    .sendActivity(MessageFactory.text(String.format(welcomeMessage, port)))
+                    .sendActivity(MessageFactory.text(welcomeMessage))
             )
             .collect(CompletableFutures.toFutureList())
             .thenApply(resourceResponses -> null);
@@ -82,17 +83,13 @@ public class GroupChatGitlabBot extends ActivityHandler {
     // adds a ConversationReference to the shared Map.
     private void addConversationReference(TurnContext turnContext) {
         ConversationReference conversationReference = turnContext.getActivity().getConversationReference();
-        System.out.println(turnContext.getActivity().getConversationReference().getConversation().getId());
-
         TeamsInfo.getMembers(turnContext).thenAccept(members -> {
             // Process the list of members
             for (TeamsChannelAccount member : members) {
                 if(!member.getName().equals("Bot")){
-                    System.out.println(member.getId() + " " + member.getName());
                     boolean present = false;
-                    if(conversationReferences.get(member.getId()) == null){
-                        conversationReferences.put(member.getId(), new ArrayList<>());
-                    }
+                    conversationReferences.computeIfAbsent(member.getId(), k -> new ArrayList<>());
+
                     for(int i = 0; i < conversationReferences.get(member.getId()).size(); i++){
                         if(conversationReferences.get(member.getId()).get(i).getConversation().getId().equals(turnContext.getActivity().getConversationReference().getConversation().getId())){
                             conversationReferences.get(member.getId()).set(i, turnContext.getActivity().getConversationReference());
@@ -105,7 +102,6 @@ public class GroupChatGitlabBot extends ActivityHandler {
                 }
             }
         });
-//        conversationReferences.put(conversationReference.getUser().getId(), conversationReference);
     }
 
     /**
@@ -117,6 +113,34 @@ public class GroupChatGitlabBot extends ActivityHandler {
      */
     public static CompletableFuture<MergeRequest> waitForMergeRequest(String projectId, String sha, String accessToken) {
         String url = "https://gitlab.com/api/v4/projects/" + projectId + "/repository/commits/" + sha + "/merge_requests";
+        return fetchMergeRequest(url, accessToken);
+    }
+
+    /**
+     * fetch merge request with the help of id
+     * @param projectId
+     * @param id
+     * @param accessToken
+     * @return mergeRequest
+     */
+    public static CompletableFuture<MergeRequest> waitForMergeStatus(String projectId, Long id, String accessToken) {
+
+        String url = "https://gitlab.com/api/v4/projects/" + projectId + "/merge_requests?id=" + id.toString();
+        return fetchMergeRequest(url, accessToken);
+    }
+
+    public static CompletableFuture<Pipeline> waitForPipelineStatus(String projectId, String headPipelineId, String accessToken){
+        String url = "https://gitlab.com/api/v4/projects/" + projectId + "/pipelines/" + headPipelineId;
+        return fetchPipeline(url, accessToken);
+    }
+
+    /**
+     * call gitlab api to fetch merge request
+     * @param url
+     * @param accessToken
+     * @return
+     */
+    private static CompletableFuture<MergeRequest> fetchMergeRequest(String url, String accessToken) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 URL apiUrl = new URL(url);
@@ -132,7 +156,7 @@ public class GroupChatGitlabBot extends ActivityHandler {
                     JsonNode rootNode = objectMapper.readTree(connection.getInputStream());
 
                     // Check if the root node is an array
-                    if (rootNode.isArray() && rootNode.size() > 0) {
+                    if (rootNode.isArray() && !rootNode.isEmpty()) {
                         // Get the first element from the array
                         JsonNode mergeRequestNode = rootNode.get(0);
                         // Deserialize the JSON object into a MergeRequest object
@@ -153,16 +177,12 @@ public class GroupChatGitlabBot extends ActivityHandler {
     }
 
     /**
-     * fetch merge request with the help of id
-     * @param projectId
-     * @param id
+     * call gitlab api to fetch pipeline
+     * @param url
      * @param accessToken
-     * @return mergeRequest
+     * @return
      */
-
-    public static CompletableFuture<MergeRequest> waitForMergeStatus(String projectId, Long id, String accessToken) {
-
-        String url = "https://gitlab.com/api/v4/projects/" + projectId + "/merge_requests?id=" + id.toString();
+    private static CompletableFuture<Pipeline> fetchPipeline(String url, String accessToken) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 URL apiUrl = new URL(url);
@@ -177,16 +197,9 @@ public class GroupChatGitlabBot extends ActivityHandler {
                     // Read the response into a JsonNode
                     JsonNode rootNode = objectMapper.readTree(connection.getInputStream());
 
-                    // Check if the root node is an array
-                    if (rootNode.isArray() && rootNode.size() > 0) {
-                        // Get the first element from the array
-                        JsonNode mergeRequestNode = rootNode.get(0);
-                        // Deserialize the JSON object into a MergeRequest object
-                        MergeRequest mergeRequest = objectMapper.treeToValue(mergeRequestNode, MergeRequest.class);
-                        return mergeRequest;
-                    } else {
-                        return null;
-                    }
+                    // Deserialize the JSON object into a MergeRequest object
+                    Pipeline pipeline = objectMapper.treeToValue(rootNode, Pipeline.class);
+                    return pipeline;
                 } else {
                     System.err.println("Error: " + connection.getResponseMessage());
                     return null; // Return null if there was an error

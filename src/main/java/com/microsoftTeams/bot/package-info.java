@@ -1,4 +1,4 @@
 /**
- * This package contains the classes for the proactive messages sample.
+ * This package contains the classes for sending group notification bot in MS teams.
  */
 package com.microsoftTeams.bot;
