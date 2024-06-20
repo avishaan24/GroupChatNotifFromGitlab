@@ -13,6 +13,9 @@ public class ObjectAttributes {
     @JsonProperty("id")
     private Long id;
 
+    @JsonProperty("iid")
+    private Long iid;
+
     @JsonProperty("state")
     private String state;
 
@@ -162,5 +165,13 @@ public class ObjectAttributes {
 
     public void setHeadPipelineId(String headPipelineId) {
         this.headPipelineId = headPipelineId;
+    }
+
+    public Long getIid() {
+        return iid;
+    }
+
+    public void setIid(Long iid) {
+        this.iid = iid;
     }
 }

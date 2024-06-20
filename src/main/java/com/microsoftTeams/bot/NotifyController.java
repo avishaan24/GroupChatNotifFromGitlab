@@ -110,8 +110,8 @@ public class NotifyController {
                     Pipeline pipeline = localPipeline.get();
 
                     // if it is success then check the merge Request is ready to merge or not
-                    if(pipeline.getStatus().equals("success")){
-                        CompletableFuture<MergeRequest> mergeRequestFuture = GroupChatGitlabBot.waitForMergeStatus(information.getProject().getId(), information.getObjectAttributes().getId(), accessToken);
+                    if(pipeline!= null && pipeline.getStatus().equals("success")){
+                        CompletableFuture<MergeRequest> mergeRequestFuture = GroupChatGitlabBot.waitForMergeStatus(information.getProject().getId(), information.getObjectAttributes().getIid(), accessToken);
                         sendNotification(mergeRequestFuture);
                     }
                 }

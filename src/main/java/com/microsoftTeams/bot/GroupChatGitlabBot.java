@@ -41,7 +41,7 @@ public class GroupChatGitlabBot extends ActivityHandler {
 
     // Message to send to users when the bot receives a Conversation Update event
     private final String welcomeMessage =
-        "Successfully added, we will notify about your operations in Gitlab.\n" + "\nThanks!!";
+        "Successfully added, we will notify about PRs which is ready to merge in Gitlab.\n" + "\nThanks!!";
 
     private final ConversationReferences conversationReferences;
 
@@ -119,13 +119,13 @@ public class GroupChatGitlabBot extends ActivityHandler {
     /**
      * fetch merge request with the help of id
      * @param projectId
-     * @param id
+     * @param iid
      * @param accessToken
      * @return mergeRequest
      */
-    public static CompletableFuture<MergeRequest> waitForMergeStatus(String projectId, Long id, String accessToken) {
+    public static CompletableFuture<MergeRequest> waitForMergeStatus(String projectId, Long iid, String accessToken) {
 
-        String url = "https://gitlab.com/api/v4/projects/" + projectId + "/merge_requests?id=" + id.toString();
+        String url = "https://gitlab.com/api/v4/projects/" + projectId + "/merge_requests/" + iid.toString();
         return fetchMergeRequest(url, accessToken);
     }
 

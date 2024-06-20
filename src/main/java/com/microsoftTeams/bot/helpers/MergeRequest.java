@@ -13,6 +13,9 @@ public class MergeRequest {
     @JsonProperty("id")
     private Long id;
 
+    @JsonProperty("iid")
+    private Long iid;
+
     @JsonProperty("title")
     private String title;
 
@@ -101,5 +104,13 @@ public class MergeRequest {
 
     public void setLastCommit(LastCommit lastCommit) {
         this.lastCommit = lastCommit;
+    }
+
+    public Long getIid() {
+        return iid;
+    }
+
+    public void setIid(Long iid) {
+        this.iid = iid;
     }
 }
